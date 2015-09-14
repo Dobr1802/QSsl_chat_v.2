@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTcpServer>
+#include <QTcpSocket>
 
 namespace Ui {
 class MainWindow;
@@ -18,10 +19,12 @@ public:
 
 private slots:
     void addConnection();
+    void write();
 
 private:
     Ui::MainWindow *ui;
-    QTcpServer *server;
+    QTcpServer *_server;
+    QTcpSocket *_socket;
 };
 
 #endif // MAINWINDOW_H
