@@ -22,6 +22,7 @@ void MainWindow::on_connectButton_clicked()
 {
     _socket->connectToHost(ui->host->text(), ui->port->text().toInt());
     _socket->open(QIODevice::ReadWrite);
+    _socket->readyRead();
 }
 
 void MainWindow::read()

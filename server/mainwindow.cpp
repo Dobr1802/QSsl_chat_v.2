@@ -26,12 +26,11 @@ void MainWindow::addConnection()
 {
     _socket = new QTcpSocket(_server->nextPendingConnection());
     _socket->open(QIODevice::ReadWrite);
-    _socket->waitForReadyRead(-1);
-    _socket->write("some text");
 
-//    connect(_socket, SIGNAL(readyRead()), this, SLOT(write()));
+    connect(_socket, SIGNAL(readyRead()), this, SLOT(write()));
 }
 
 void MainWindow::write()
 {
+    _socket->write("some text");
 }
