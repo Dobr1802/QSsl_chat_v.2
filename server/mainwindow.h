@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include <QTcpServer>
-#include <QTcpSocket>
+#include <QSslSocket>
+#include "sslserver.h"
 
 namespace Ui {
 class MainWindow;
@@ -23,8 +24,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QTcpServer *_server;
-    QTcpSocket *_socket;
+    SslServer *m_server;
 };
 
 #endif // MAINWINDOW_H
