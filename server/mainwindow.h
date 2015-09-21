@@ -20,12 +20,12 @@ public:
 private slots:
     void addConnection();
     void sslErr(const QList<QSslError> &errors);
-    void somthWrong(QAbstractSocket::SocketError err);
 
 private:
     Ui::MainWindow *ui;
     SslServer *m_server;
-    QList<QSslCertificate> certs;
+    QList<QSslCertificate> m_clients_certificates;
+    QString m_certificate, m_key;
 };
 
 #endif // MAINWINDOW_H

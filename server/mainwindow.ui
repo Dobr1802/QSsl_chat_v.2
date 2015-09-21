@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>519</width>
-    <height>491</height>
+    <width>530</width>
+    <height>555</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,14 +34,14 @@
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="2">
-        <widget class="QPushButton" name="sertificateOpenButton">
+        <widget class="QPushButton" name="certificateOpenButton">
          <property name="text">
-          <string>open...</string>
+          <string>Open...</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="sertLineEdit">
+        <widget class="QLineEdit" name="certLineEdit">
          <property name="text">
           <string>/home/kindnes/projects/client_server/certificates/server.crt</string>
          </property>
@@ -50,14 +50,14 @@
        <item row="1" column="2">
         <widget class="QPushButton" name="keyOpenButton">
          <property name="text">
-          <string>open...</string>
+          <string>Open...</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Key</string>
+          <string>Server key</string>
          </property>
         </widget>
        </item>
@@ -71,7 +71,7 @@
        <item row="0" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Sertificate</string>
+          <string>Server certificate</string>
          </property>
         </widget>
        </item>
@@ -110,7 +110,7 @@
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="QPushButton" name="startStopServer">
+        <widget class="QPushButton" name="starServer">
          <property name="text">
           <string>StartServer</string>
          </property>
@@ -133,7 +133,67 @@
      </widget>
     </item>
     <item>
-     <widget class="QTextEdit" name="textEdit"/>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Add new user</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>User certificate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="userCertButton">
+         <property name="minimumSize">
+          <size>
+           <width>400</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>400</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Open...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="logTextEdit"/>
     </item>
    </layout>
   </widget>
