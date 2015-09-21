@@ -50,12 +50,15 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="sertLineEdit">
          <property name="text">
-          <string>/home/kindnes/projects/client_server/certificates/client.crs</string>
+          <string>/home/kindnes/projects/client_server/certificates/client.crt</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QLineEdit" name="keyLineEdit">
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
+         </property>
          <property name="text">
           <string>/home/kindnes/projects/client_server/certificates/client.key</string>
          </property>

@@ -9,7 +9,7 @@ class SslServer : public QTcpServer
 public:
     explicit SslServer(QObject *parent = 0);
 
-void incomingConnection(int socketDescriptor);
+void incomingConnection(qintptr socketDescriptor);
 
 };
 

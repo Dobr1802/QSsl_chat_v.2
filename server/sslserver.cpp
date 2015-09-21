@@ -3,7 +3,7 @@
 
 SslServer::SslServer(QObject *parent) : QTcpServer(parent) {}
 
-void SslServer::incomingConnection(int socketDescriptor)
+void SslServer::incomingConnection(qintptr socketDescriptor)
 {
     QSslSocket *serverSocket = new QSslSocket();
     if (serverSocket->setSocketDescriptor(socketDescriptor))

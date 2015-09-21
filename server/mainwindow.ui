@@ -43,7 +43,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="sertLineEdit">
          <property name="text">
-          <string>/home/kindnes/projects/client_server/certificates/server.crs</string>
+          <string>/home/kindnes/projects/client_server/certificates/server.crt</string>
          </property>
         </widget>
        </item>
@@ -51,13 +51,6 @@
         <widget class="QPushButton" name="keyOpenButton">
          <property name="text">
           <string>open...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Sertificate</string>
          </property>
         </widget>
        </item>
@@ -72,6 +65,13 @@
         <widget class="QLineEdit" name="keyLineEdit">
          <property name="text">
           <string>/home/kindnes/projects/client_server/certificates/server.key</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Sertificate</string>
          </property>
         </widget>
        </item>
