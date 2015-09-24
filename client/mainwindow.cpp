@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QSslKey>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +32,22 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(ui->sendPushButton, &QAbstractButton::clicked, [this](){
             m_socket->write(QString("%1").arg(ui->sendingMsgLineEdit->text()).toUtf8());
             ui->sendingMsgLineEdit->clear();
+        });
+        connect(ui->certificateOpenButton, &QAbstractButton::clicked, [this](){
+            QString certificate = QFileDialog::getOpenFileName(this, "Select certificate file");
+            if(!certificate.isEmpty())
+            {
+                m_socket->setLocalCertificate(certificate);
+                ui->sertLineEdit->setText(certificate);
+            }
+        });
+        connect(ui->keyOpenButton, &QAbstractButton::clicked, [this](){
+            QString key = QFileDialog::getOpenFileName(this, "Select key file");
+            if(!key.isEmpty())
+            {
+                m_socket->setPrivateKey(key);
+                ui->keyLineEdit->setText(key);
+            }
         });
     }
     else

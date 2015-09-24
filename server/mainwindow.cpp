@@ -74,13 +74,18 @@ void MainWindow::addConnection()
                                     .arg(socket->peerAddress().toString())
                                     .arg(socket->peerPort()));
             m_sockets.append(socket);
+            QByteArray block = "HTTP/1.0 200 Ok\r\n"
+           "Content-Type: text/html; charset=\"utf-8\"\r\n"
+           "\r\n"
+           "FUUUUU!"
+           "\r\n";
+            socket->write(block);
         }
         else
         {
             ui->logTextEdit->append(QString("Peer ignored %1:%2 ")
                                     .arg(socket->peerAddress().toString())
                                     .arg(socket->peerPort()));
-//            socket->write(QString("Unknown user. Disconnect.").toStdString().c_str());
             socket->close();
         }
     });
@@ -106,9 +111,16 @@ void MainWindow::addConnection()
     socket->startServerEncryption();
 }
 
-void MainWindow::sslErr(const QList<QSslError> &err)
+void MainWindow::sslErr(const QList<QSslError> &errors)
 {
-    qDebug() << err;
+    QSslSocket *socket = dynamic_cast<QSslSocket *>(sender());
+    assert(socket);
+
+    ui->logTextEdit->append(QString("Errors:"));
+    foreach (auto err, errors) {
+        ui->logTextEdit->append(err.errorString());
+    }
+    socket->ignoreSslErrors();
 }
 
 void MainWindow::somthWrong(QAbstractSocket::SocketError err)
