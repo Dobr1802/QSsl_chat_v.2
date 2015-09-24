@@ -10,21 +10,31 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     if(QSslSocket::supportsSsl())
-        qDebug() << "ok...\n";
+    {
+        m_socket = new QSslSocket();
+        m_socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
+
+        m_socket->setLocalCertificate(ui->sertLineEdit->text());
+        m_socket->setPrivateKey(ui->keyLineEdit->text());
+
+        //Connect socket signals.
+        connect(m_socket, &QSslSocket::readyRead, [this](){
+            ui->logTextEdit->append(m_socket->readAll().constData());
+        });
+        connect(m_socket, &QSslSocket::encrypted, [this](){
+            ui->logTextEdit->append(QString("Connected"));
+        });
+        connect(m_socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
+        connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(somthWrong(QAbstractSocket::SocketError)));
+
+        //Connect buttons.
+        connect(ui->sendPushButton, &QAbstractButton::clicked, [this](){
+            m_socket->write(QString("%1").arg(ui->sendingMsgLineEdit->text()).toUtf8());
+            ui->sendingMsgLineEdit->clear();
+        });
+    }
     else
-        qDebug() << "bad \n";
-
-    m_socket = new QSslSocket();
-    m_socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
-
-    m_socket->setLocalCertificate(ui->sertLineEdit->text());
-    m_socket->setPrivateKey(ui->keyLineEdit->text());
-
-    connect(m_socket, &QSslSocket::readyRead, [this](){
-        ui->textEdit->setText(m_socket->readAll().constData());
-    });
-    connect(m_socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
-    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(somthWrong(QAbstractSocket::SocketError)));
+        ui->logTextEdit->setText("SSL does not support.");
 }
 
 MainWindow::~MainWindow()
@@ -41,18 +51,15 @@ void MainWindow::on_connectButton_clicked()
 
 void MainWindow::sslErr(const QList<QSslError> &errors)
 {
-    if ((errors.size() == 1) && (errors.first() == QSslError::SelfSignedCertificate || QSslError::CertificateUntrusted))
-    {
-        m_socket->ignoreSslErrors();
+    ui->logTextEdit->append(QString("Errors:"));
+    foreach (auto err, errors) {
+        ui->logTextEdit->append(err.errorString());
     }
-    else
-    {
-        qDebug() << errors;
-    }
+    m_socket->ignoreSslErrors();
 }
 
 void MainWindow::somthWrong(QAbstractSocket::SocketError err)
 {
+    ui->logTextEdit->append("Connection error.");
     qDebug() << err;
-    m_socket->close();
 }

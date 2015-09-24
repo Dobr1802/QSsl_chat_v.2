@@ -10,9 +10,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
-    if(!QSslSocket::supportsSsl())
-        ui->logTextEdit->setText("SSL does not support.");
-    else
+    m_certificate = ui->certLineEdit->text();
+    m_key = ui->keyLineEdit->text();
+
+    if(QSslSocket::supportsSsl())
     {
         //Connect buttons.
         connect(ui->userCertButton, &QAbstractButton::clicked, [this](){
@@ -27,26 +28,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         });
         connect(ui->certificateOpenButton, &QAbstractButton::clicked, [this](){
             m_certificate = QFileDialog::getOpenFileName(this, "Select certificate file");
-            if (!m_certificate.isEmpty())
-            {
-                ui->certLineEdit->setText(m_certificate);
-            }
+            ui->certLineEdit->setText(m_certificate);
         });
         connect(ui->keyOpenButton, &QAbstractButton::clicked, [this](){
             m_key = QFileDialog::getOpenFileName(this, "Select keyfile");
-            if (!m_key.isEmpty())
-            {
-                ui->keyLineEdit->setText(m_key);
-            }
+            ui->keyLineEdit->setText(m_key);
         });
         connect(ui->starServer, &QAbstractButton::clicked, [this](){
             if (!ui->port->text().isEmpty())
             {
                 m_server->listen(QHostAddress::Any, ui->port->text().toInt());
+                ui->logTextEdit->append(QString("Server listening on %1 port").arg(ui->port->text()));
                 connect(m_server, SIGNAL(newConnection()), this, SLOT(addConnection()));
             }
         });
     }
+    else
+        ui->logTextEdit->setText("SSL does not support.");
 }
 
 MainWindow::~MainWindow()
@@ -59,44 +57,61 @@ void MainWindow::addConnection()
 {
     QSslSocket *socket = dynamic_cast<QSslSocket *>(m_server->nextPendingConnection());
     assert(socket);
-    socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
 
+    //Connect sockets signals.
     connect(socket, &QSslSocket::encrypted, [socket, this](){
+        bool isKnown = false;
         foreach (QSslCertificate cert, m_clients_certificates)
         {
             if (socket->peerCertificate() == cert)
             {
-                ui->logTextEdit->append(QString("New connection %1:%2 ")
-                                        .arg(socket->peerAddress().toString())
-                                        .arg(socket->peerPort()));
-                break;
+                isKnown = true;
             }
+        }
+        if (isKnown)
+        {
+            ui->logTextEdit->append(QString("New connection %1:%2 ")
+                                    .arg(socket->peerAddress().toString())
+                                    .arg(socket->peerPort()));
+            m_sockets.append(socket);
+        }
+        else
+        {
             ui->logTextEdit->append(QString("Peer ignored %1:%2 ")
                                     .arg(socket->peerAddress().toString())
                                     .arg(socket->peerPort()));
+//            socket->write(QString("Unknown user. Disconnect.").toStdString().c_str());
             socket->close();
         }
     });
-
-    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
+    connect(socket, &QSslSocket::disconnected, [socket, this](){
+        ui->logTextEdit->append(QString("Peer %1:%2 disconnected.")
+                                .arg(socket->peerAddress().toString())
+                                .arg(socket->peerPort()));
+    });
     connect(socket, &QSslSocket::readyRead, [socket, this](){
         ui->logTextEdit->append(QString("Msg from %1:%2 : %3")
                                 .arg(socket->peerAddress().toString())
                                 .arg(socket->peerPort())
                                 .arg(socket->readAll().constData()));
     });
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(somthWrong(QAbstractSocket::SocketError)));
 
-    QList<QSslError> errors;
-    errors.append(QSslError::CertificateUntrusted);
-    errors.append(QSslError::SelfSignedCertificate);
-    socket->ignoreSslErrors(errors);
+    socket->ignoreSslErrors();
 
     socket->setLocalCertificate(m_certificate);
     socket->setPrivateKey(m_key);
+    socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
     socket->startServerEncryption();
 }
 
 void MainWindow::sslErr(const QList<QSslError> &err)
+{
+    qDebug() << err;
+}
+
+void MainWindow::somthWrong(QAbstractSocket::SocketError err)
 {
     qDebug() << err;
 }
