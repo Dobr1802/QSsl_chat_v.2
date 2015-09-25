@@ -24,7 +24,10 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->logTextEdit->append(m_socket->readAll().constData());
     });
     connect(m_socket, &QSslSocket::encrypted, [this](){
-        ui->logTextEdit->append(QString("Connected"));
+        ui->logTextEdit->append(QString("Connected."));
+    });
+    connect(m_socket, &QSslSocket::disconnected, [this](){
+        ui->logTextEdit->append(QString("Disconnected"));
     });
     connect(m_socket, &QSslSocket::stateChanged, [this](QAbstractSocket::SocketState state){
         qDebug() << Q_FUNC_INFO << state;
@@ -72,10 +75,7 @@ void MainWindow::sslErr(const QList<QSslError> &errors)
         ui->logTextEdit->append(err.errorString());
     }
 
-    QList<QSslError> ignoreErrors;
-    ignoreErrors.append(QSslError::CertificateUntrusted);
-    ignoreErrors.append(QSslError::SelfSignedCertificate);
-    m_socket->ignoreSslErrors(ignoreErrors);
+    m_socket->ignoreSslErrors();
 }
 
 void MainWindow::somthWrong(QAbstractSocket::SocketError err)

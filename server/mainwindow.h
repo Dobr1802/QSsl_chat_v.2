@@ -26,8 +26,9 @@ private:
     Ui::MainWindow *ui;
     SslServer *m_server;
     QList<QSslSocket *> m_sockets;
-    QList<QSslCertificate> m_clients_certificates;
+    QList<QByteArray> m_clients_certificates;
     QString m_certificate, m_key;
+
     void logWrite(const QString &aMsg);
 };
 
