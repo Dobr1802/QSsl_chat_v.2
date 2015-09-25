@@ -27,12 +27,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         });
         connect(ui->certificateOpenButton, &QAbstractButton::clicked, [this](){
-            m_certificate = QFileDialog::getOpenFileName(this, "Select certificate file");
-            ui->certLineEdit->setText(m_certificate);
+            QString certificate = QFileDialog::getOpenFileName(this, "Select certificate file");
+            if (!certificate.isEmpty())
+            {
+                ui->certLineEdit->setText(certificate);
+                m_certificate = certificate;
+            }
         });
         connect(ui->keyOpenButton, &QAbstractButton::clicked, [this](){
-            m_key = QFileDialog::getOpenFileName(this, "Select keyfile");
-            ui->keyLineEdit->setText(m_key);
+            QString key = QFileDialog::getOpenFileName(this, "Select certificate file");
+            if (!key.isEmpty())
+            {
+                ui->keyLineEdit->setText(m_key);
+                m_key = key;
+            }
         });
         connect(ui->starServer, &QAbstractButton::clicked, [this](){
             if (!ui->port->text().isEmpty())

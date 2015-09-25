@@ -49,6 +49,9 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->keyLineEdit->setText(key);
             }
         });
+        connect(ui->keyOpenButton, &QAbstractButton::clicked, [this](){
+            m_socket->connectToHostEncrypted(ui->host->text(), ui->port->text().toInt());
+        });
     }
     else
         ui->logTextEdit->setText("SSL does not support.");
@@ -59,11 +62,6 @@ MainWindow::~MainWindow()
     delete ui;
     if (m_socket->isOpen())
         delete m_socket;
-}
-
-void MainWindow::on_connectButton_clicked()
-{
-    m_socket->connectToHostEncrypted(ui->host->text(), ui->port->text().toInt());
 }
 
 void MainWindow::sslErr(const QList<QSslError> &errors)
