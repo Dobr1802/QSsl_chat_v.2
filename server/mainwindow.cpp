@@ -10,9 +10,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
-    m_certificate = ui->certLineEdit->text();
-    m_key = ui->keyLineEdit->text();
-
     if(QSslSocket::supportsSsl())
     {
         //Connect buttons.
@@ -21,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             if (!path.isEmpty())
             {
                 QFile file(path);
-                file.open(QIODevice::ReadWrite);
+                file.open(QIODevice::ReadOnly);
                 m_clients_certificates.append(QSslCertificate(file.readAll()));
                 file.close();
             }
@@ -35,10 +32,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         });
         connect(ui->keyOpenButton, &QAbstractButton::clicked, [this](){
-            QString key = QFileDialog::getOpenFileName(this, "Select certificate file");
+            QString key = QFileDialog::getOpenFileName(this, "Select key file");
             if (!key.isEmpty())
             {
-                ui->keyLineEdit->setText(m_key);
+                ui->keyLineEdit->setText(key);
                 m_key = key;
             }
         });
@@ -61,6 +58,12 @@ MainWindow::~MainWindow()
     delete m_server;
 }
 
+void MainWindow::logWrite(const QString& aMsg)
+{
+    ui->logTextEdit->append(aMsg);
+    qDebug() << aMsg;
+}
+
 void MainWindow::addConnection()
 {
     QSslSocket *socket = dynamic_cast<QSslSocket *>(m_server->nextPendingConnection());
@@ -68,46 +71,37 @@ void MainWindow::addConnection()
 
     //Connect sockets signals.
     connect(socket, &QSslSocket::encrypted, [socket, this](){
-        bool isKnown = false;
-        foreach (QSslCertificate cert, m_clients_certificates)
-        {
-            if (socket->peerCertificate() == cert)
-            {
-                isKnown = true;
-            }
-        }
-        if (isKnown)
+        if (m_clients_certificates.contains(socket->peerCertificate()))
         {
             ui->logTextEdit->append(QString("New connection %1:%2 ")
                                     .arg(socket->peerAddress().toString())
                                     .arg(socket->peerPort()));
             m_sockets.append(socket);
-            QByteArray block = "HTTP/1.0 200 Ok\r\n"
-           "Content-Type: text/html; charset=\"utf-8\"\r\n"
-           "\r\n"
-           "FUUUUU!"
-           "\r\n";
-            socket->write(block);
+            socket->write("Connected.");
         }
         else
         {
-            ui->logTextEdit->append(QString("Peer ignored %1:%2 ")
-                                    .arg(socket->peerAddress().toString())
-                                    .arg(socket->peerPort()));
+            logWrite(QString("Peer ignored %1:%2 ")
+                     .arg(socket->peerAddress().toString())
+                     .arg(socket->peerPort()));
             socket->close();
         }
     });
     connect(socket, &QSslSocket::disconnected, [socket, this](){
-        ui->logTextEdit->append(QString("Peer %1:%2 disconnected.")
+        logWrite(QString("Peer %1:%2 disconnected.")
                                 .arg(socket->peerAddress().toString())
                                 .arg(socket->peerPort()));
     });
     connect(socket, &QSslSocket::readyRead, [socket, this](){
-        ui->logTextEdit->append(QString("Msg from %1:%2 : %3")
+        logWrite(QString("Msg from %1:%2 : %3")
                                 .arg(socket->peerAddress().toString())
                                 .arg(socket->peerPort())
                                 .arg(socket->readAll().constData()));
     });
+    connect(socket, &QSslSocket::stateChanged, [this](QAbstractSocket::SocketState state){
+        qDebug() << Q_FUNC_INFO << state;
+    });
+
     connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(somthWrong(QAbstractSocket::SocketError)));
 
@@ -124,11 +118,11 @@ void MainWindow::sslErr(const QList<QSslError> &errors)
     QSslSocket *socket = dynamic_cast<QSslSocket *>(sender());
     assert(socket);
 
-    ui->logTextEdit->append(QString("Errors:"));
-    foreach (auto err, errors) {
-        ui->logTextEdit->append(err.errorString());
+    logWrite(QString("Errors:"));
+    foreach (auto err, errors)
+    {
+        logWrite(err.errorString());
     }
-    socket->ignoreSslErrors();
 }
 
 void MainWindow::somthWrong(QAbstractSocket::SocketError err)

@@ -28,6 +28,7 @@ private:
     QList<QSslSocket *> m_sockets;
     QList<QSslCertificate> m_clients_certificates;
     QString m_certificate, m_key;
+    void logWrite(const QString &aMsg);
 };
 
 #endif // MAINWINDOW_H
