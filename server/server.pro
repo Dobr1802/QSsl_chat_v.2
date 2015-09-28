@@ -16,9 +16,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    sslserver.cpp
+    sslserver.cpp \
+    userscertificates.cpp
 
 HEADERS  += mainwindow.h \
-    sslserver.h
+    sslserver.h \
+    userscertificates.h
 
 FORMS    += mainwindow.ui

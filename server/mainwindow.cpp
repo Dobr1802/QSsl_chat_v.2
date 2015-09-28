@@ -1,15 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QFile>
 #include <QDebug>
 #include <cassert>
-#include <QSslCertificate>
-#include <QSettings>
-#include <QFile>
 #include <QFileDialog>
+#include <QSslCertificate>
 
-const QString USER_CERTS = "users_certificates";
-
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), m_server(new SslServer(this))
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), m_server(new SslServer(this)), m_clients_certificates()
 {
     ui->setupUi(this);
 
@@ -19,23 +16,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         return;
     }
 
-    QCoreApplication::setOrganizationName("RBT");
-    QCoreApplication::setApplicationName("QSslServer");
-
-    QSettings settings;
-    if (settings.contains(USER_CERTS))
-    {
-        m_clients_certificates = settings.value(USER_CERTS).value<QList<QByteArray>>();
-    }
-
     //Connect buttons.
-    connect(ui->userCertButton, &QAbstractButton::clicked, [&settings, this](){
+    connect(ui->userCertButton, &QAbstractButton::clicked, [this](){
         QString path = QFileDialog::getOpenFileName(this, "Select key file");
         if (!path.isEmpty())
         {
             QFile file(path);
             file.open(QIODevice::ReadOnly);
-            m_clients_certificates.append(file.readAll());
+            m_clients_certificates.add(file.readAll());
             file.close();
         }
     });
@@ -84,7 +72,7 @@ void MainWindow::addConnection()
 
     //Connect sockets signals.
     connect(socket, &QSslSocket::encrypted, [socket, this](){
-        if (m_clients_certificates.contains(socket->peerCertificate().toPem()))
+        if (m_clients_certificates.contains(socket->peerCertificate()))
         {
             logWrite(QString("New connection %1:%2 ")
                                     .arg(socket->peerAddress().toString())
