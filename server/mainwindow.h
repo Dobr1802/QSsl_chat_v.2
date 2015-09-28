@@ -20,8 +20,6 @@ public:
 
 private slots:
     void addConnection();
-    void sslErr(const QList<QSslError> &errors);
-    void somthWrong(QAbstractSocket::SocketError err);
 
 private:
     Ui::MainWindow *ui;

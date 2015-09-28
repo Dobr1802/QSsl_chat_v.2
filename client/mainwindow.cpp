@@ -32,8 +32,20 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_socket, &QSslSocket::stateChanged, [this](QAbstractSocket::SocketState state){
         qDebug() << Q_FUNC_INFO << state;
     });
-    connect(m_socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
-    connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(somthWrong(QAbstractSocket::SocketError)));
+    connect(m_socket, static_cast<void (QSslSocket::*)(const QList<QSslError> &)>(&QSslSocket::sslErrors), [this](const QList<QSslError> &errors){
+        ui->logTextEdit->append("Errors:");
+        for(const auto &err: errors)
+        {
+            ui->logTextEdit->append(err.errorString());
+        }
+
+        m_socket->ignoreSslErrors();
+    });
+
+    connect(m_socket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), [this](QAbstractSocket::SocketError errors){
+        ui->logTextEdit->append("Сritical error.");
+        qDebug() << errors;
+    });
 
     //Connect buttons.
     connect(ui->sendPushButton, &QAbstractButton::clicked, [this](){
@@ -65,21 +77,4 @@ MainWindow::~MainWindow()
 {
     delete ui;
     m_socket->deleteLater();
-}
-
-void MainWindow::sslErr(const QList<QSslError> &errors)
-{
-    ui->logTextEdit->append("Errors:");
-    for(const auto &err: errors)
-    {
-        ui->logTextEdit->append(err.errorString());
-    }
-
-    m_socket->ignoreSslErrors();
-}
-
-void MainWindow::somthWrong(QAbstractSocket::SocketError err)
-{
-    ui->logTextEdit->append("Connection error.");
-    qDebug() << err;
 }

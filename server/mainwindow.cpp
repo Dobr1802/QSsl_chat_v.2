@@ -104,8 +104,21 @@ void MainWindow::addConnection()
         qDebug() << Q_FUNC_INFO << state;
     });
 
-    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErr(const QList<QSslError> &)));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(somthWrong(QAbstractSocket::SocketError)));
+    connect(socket, static_cast<void (QSslSocket::*)(const QList<QSslError> &)>(&QSslSocket::sslErrors), [socket, this](const QList<QSslError> &errors){
+        logWrite(QString("Errors %1:%2 :")
+                 .arg(socket->peerAddress().toString())
+                 .arg(socket->peerPort()));
+
+        foreach (auto err, errors)
+        {
+            logWrite(err.errorString());
+        }
+    });
+
+    connect(socket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), [this](QAbstractSocket::SocketError errors){
+        ui->logTextEdit->append("Сritical error.");
+        qDebug() << errors;
+    });
 
     QList<QSslError> ignoreErrors;
     ignoreErrors << QSslError::CertificateUntrusted << QSslError::SelfSignedCertificate;
@@ -115,24 +128,4 @@ void MainWindow::addConnection()
     socket->setPrivateKey(m_key);
     socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
     socket->startServerEncryption();
-}
-
-void MainWindow::sslErr(const QList<QSslError> &errors)
-{
-    QSslSocket *socket = dynamic_cast<QSslSocket *>(sender());
-    assert(socket);
-
-    logWrite(QString("Errors %1:%2 :")
-             .arg(socket->peerAddress().toString())
-             .arg(socket->peerPort()));
-
-    foreach (auto err, errors)
-    {
-        logWrite(err.errorString());
-    }
-}
-
-void MainWindow::somthWrong(QAbstractSocket::SocketError err)
-{
-    qDebug() << err;
 }
