@@ -17,8 +17,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     //Connect buttons.
+    //Add user certificate button.
     connect(ui->userCertButton, &QAbstractButton::clicked, [this](){
-        QString path = QFileDialog::getOpenFileName(this, "Select key file");
+        QString path = QFileDialog::getOpenFileName(this, "Select certificate file");
         if (!path.isEmpty())
         {
             QFile file(path);
@@ -27,6 +28,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             file.close();
         }
     });
+    //Remove user sertifivate button.
+    connect(ui->removeUserPushButton, &QAbstractButton::clicked, [this](){
+        QString path = QFileDialog::getOpenFileName(this, "Select certificate file");
+        if (!path.isEmpty())
+        {
+            QFile file(path);
+            file.open(QIODevice::ReadOnly);
+            m_clients_certificates.remove(file.readAll());
+            file.close();
+        }
+    });
+    //Add server certificate button.
     connect(ui->certificateOpenButton, &QAbstractButton::clicked, [this](){
         QString certificate = QFileDialog::getOpenFileName(this, "Select certificate file");
         if (!certificate.isEmpty())
@@ -35,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             m_certificate = certificate;
         }
     });
+    //Add server private key button.
     connect(ui->keyOpenButton, &QAbstractButton::clicked, [this](){
         QString key = QFileDialog::getOpenFileName(this, "Select key file");
         if (!key.isEmpty())
@@ -43,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             m_key = key;
         }
     });
+    //Start server button.
     connect(ui->starServer, &QAbstractButton::clicked, [this](){
         if (!ui->port->text().isEmpty())
         {
@@ -71,6 +86,7 @@ void MainWindow::addConnection()
     assert(socket);
 
     //Connect sockets signals.
+    //Socket::encrypted
     connect(socket, &QSslSocket::encrypted, [socket, this](){
         if (m_clients_certificates.contains(socket->peerCertificate()))
         {
@@ -88,22 +104,25 @@ void MainWindow::addConnection()
             socket->close();
         }
     });
+    //Socket::disconnected
     connect(socket, &QSslSocket::disconnected, [socket, this](){
         logWrite(QString("Peer %1:%2 disconnected.")
                                 .arg(socket->peerAddress().toString())
                                 .arg(socket->peerPort()));
         m_sockets.removeOne(socket);
     });
+    //Socket::redyRead
     connect(socket, &QSslSocket::readyRead, [socket, this](){
         logWrite(QString("Msg from %1:%2 : %3")
                                 .arg(socket->peerAddress().toString())
                                 .arg(socket->peerPort())
                                 .arg(socket->readAll().constData()));
     });
+    //Socket::stateChanged
     connect(socket, &QSslSocket::stateChanged, [this](QAbstractSocket::SocketState state){
         qDebug() << Q_FUNC_INFO << state;
     });
-
+    //Socket::sslErrors
     connect(socket, static_cast<void (QSslSocket::*)(const QList<QSslError> &)>(&QSslSocket::sslErrors), [socket, this](const QList<QSslError> &errors){
         logWrite(QString("Errors %1:%2 :")
                  .arg(socket->peerAddress().toString())
@@ -114,7 +133,7 @@ void MainWindow::addConnection()
             logWrite(err.errorString());
         }
     });
-
+    //Socket::error
     connect(socket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), [this](QAbstractSocket::SocketError errors){
         ui->logTextEdit->append("Сritical error.");
         qDebug() << errors;

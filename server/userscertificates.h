@@ -12,6 +12,8 @@ public:
     void add(const QByteArray &cert);
 
     bool contains(const QSslCertificate &cert);
+    void remove(const QByteArray &cert);
+
 private:
     int m_clientsNum = 0;
     QSettings m_settings;
