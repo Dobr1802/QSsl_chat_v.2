@@ -13,14 +13,14 @@ UsersCertificates::UsersCertificates() : m_settings("RBT", "QSslServer")
         if (m_settings.contains(USER_CERTS.arg(i)))
         {
             i++;
-            m_clientsNum = i;
-            qDebug() << Q_FUNC_INFO << m_clientsNum;
         }
         else
         {
             break;
         }
     }
+    m_clientsNum = i;
+    qDebug() << Q_FUNC_INFO << m_clientsNum;
 }
 
 void UsersCertificates::add(const QByteArray &cert)
