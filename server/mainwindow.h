@@ -28,6 +28,7 @@ private:
     UsersCertificates m_clients_certificates;
     QString m_certificate, m_key;
 
+    void updateUsersListWidget();
     void logWrite(const QString &aMsg);
 };
 

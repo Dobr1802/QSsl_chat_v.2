@@ -12,7 +12,9 @@ public:
     void add(const QByteArray &cert);
 
     bool contains(const QSslCertificate &cert);
-    void remove(const QByteArray &cert);
+    void removeByCertificate(const QByteArray &cert);
+    void removeByKey(const QByteArray &key);
+    QStringList list();
 
 private:
     int m_clientsNum = 0;

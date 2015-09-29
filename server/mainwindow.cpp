@@ -10,6 +10,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
+    updateUsersListWidget();
+
     if(!QSslSocket::supportsSsl())
     {
         ui->logTextEdit->setText("SSL does not support.");
@@ -26,17 +28,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             file.open(QIODevice::ReadOnly);
             m_clients_certificates.add(file.readAll());
             file.close();
+
+            updateUsersListWidget();
         }
     });
     //Remove user sertifivate button.
     connect(ui->removeUserPushButton, &QAbstractButton::clicked, [this](){
-        QString path = QFileDialog::getOpenFileName(this, "Select certificate file");
-        if (!path.isEmpty())
+        if (ui->listWidget->currentItem())
         {
-            QFile file(path);
-            file.open(QIODevice::ReadOnly);
-            m_clients_certificates.remove(file.readAll());
-            file.close();
+            m_clients_certificates.removeByKey(ui->listWidget->currentItem()->data(0).value<QByteArray>());
+            updateUsersListWidget();
+        }
+        else
+        {
+            QString path = QFileDialog::getOpenFileName(this, "Select certificate file");
+            if (!path.isEmpty())
+            {
+                QFile file(path);
+                file.open(QIODevice::ReadOnly);
+                m_clients_certificates.removeByCertificate(file.readAll());
+                file.close();
+
+                updateUsersListWidget();
+            }
         }
     });
     //Add server certificate button.
@@ -147,4 +161,10 @@ void MainWindow::addConnection()
     socket->setPrivateKey(m_key);
     socket->setPeerVerifyMode(QSslSocket::VerifyPeer);
     socket->startServerEncryption();
+}
+
+void MainWindow::updateUsersListWidget()
+{
+    ui->listWidget->clear();
+    ui->listWidget->addItems(m_clients_certificates.list());
 }

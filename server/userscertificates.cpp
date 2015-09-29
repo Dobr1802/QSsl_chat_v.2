@@ -41,7 +41,7 @@ bool UsersCertificates::contains(const QSslCertificate &cert)
     return false;
 }
 
-void UsersCertificates::remove(const QByteArray &cert)
+void UsersCertificates::removeByCertificate(const QByteArray &cert)
 {
     for (int i = 0; i < m_clientsNum; i++)
     {
@@ -56,6 +56,18 @@ void UsersCertificates::remove(const QByteArray &cert)
                 m_settings.setValue(USER_CERTS.arg(i), m_settings.value(USER_CERTS.arg(m_clientsNum-1)).value<QByteArray>());
                 m_settings.remove(USER_CERTS.arg(m_clientsNum-1));
             }
+            m_clientsNum--;
+            break;
         }
     }
+}
+
+void UsersCertificates::removeByKey(const QByteArray &key)
+{
+    removeByCertificate(m_settings.value(key).value<QByteArray>());
+}
+
+QStringList UsersCertificates::list()
+{
+    return m_settings.allKeys();
 }
