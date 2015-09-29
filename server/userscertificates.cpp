@@ -47,14 +47,15 @@ void UsersCertificates::remove(const QByteArray &cert)
     {
         if (m_settings.value(USER_CERTS.arg(i)).value<QByteArray>() == cert)
         {
-            //If clients num > 3, then replace last of certificates on this place.
-            if (m_clientsNum >= 3 && i != m_clientsNum)
+            if (i == (m_clientsNum - 1) && i < 3)
             {
-                m_settings.setValue(USER_CERTS.arg(i), m_settings.value(USER_CERTS.arg(m_clientsNum-2)).value<QByteArray>());
-                m_settings.remove(USER_CERTS.arg(m_clientsNum-2));
+                m_settings.remove(USER_CERTS.arg(i));
             }
             else
-                m_settings.remove(USER_CERTS.arg(i));
+            {
+                m_settings.setValue(USER_CERTS.arg(i), m_settings.value(USER_CERTS.arg(m_clientsNum-1)).value<QByteArray>());
+                m_settings.remove(USER_CERTS.arg(m_clientsNum-1));
+            }
         }
     }
 }
