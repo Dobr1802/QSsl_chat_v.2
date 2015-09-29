@@ -7,19 +7,12 @@ const QString USER_CERTS = "user_certificate/%1";
 //Users certificates path HOME$/.config/RBT/QSslServer.conf
 UsersCertificates::UsersCertificates() : m_settings("RBT", "QSslServer")
 {
-    int i = 0;
-    while(true)
-    {
-        if (m_settings.contains(USER_CERTS.arg(i)))
-        {
-            i++;
-        }
-        else
-        {
-            break;
-        }
-    }
-    m_clientsNum = i;
+    QString userNum = "usernum";
+
+    if (m_settings.contains(userNum))
+        m_clientsNum = m_settings.value(userNum).toInt();
+    else
+        m_settings.setValue(userNum, 0);
     qDebug() << Q_FUNC_INFO << m_clientsNum;
 }
 
