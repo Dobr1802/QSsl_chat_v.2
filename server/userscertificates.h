@@ -11,13 +11,13 @@ public:
 
     void add(const QByteArray &cert);
 
-    bool contains(const QSslCertificate &cert);
+    bool contains(const QByteArray &cert);
     void removeByCertificate(const QByteArray &cert);
     void removeByKey(const QByteArray &key);
     QStringList list();
 
 private:
-    int m_clientsNum = 0;
+    int m_unicID = 0;
     QSettings m_settings;
 };
 

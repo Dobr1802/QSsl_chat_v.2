@@ -3,35 +3,35 @@
 #include <QCoreApplication>
 
 const QString USER_CERTS = "user_certificate/%1";
-const QString USER_NUM = "usernum";
+const QString USER_ID = "usernum";
 
 //Users certificates path HOME$/.config/RBT/QSslServer.conf
 UsersCertificates::UsersCertificates() : m_settings("RBT", "QSslServer")
 {
-    if (m_settings.contains(USER_NUM))
-        m_clientsNum = m_settings.value(USER_NUM).toInt();
+    if (m_settings.contains(USER_ID))
+        m_unicID = m_settings.value(USER_ID).toInt();
     else
-        m_settings.setValue(USER_NUM, 0);
-    qDebug() << Q_FUNC_INFO << m_clientsNum;
+        m_settings.setValue(USER_ID, 0);
+    qDebug() << Q_FUNC_INFO << m_unicID << "  |||  " << m_settings.allKeys();
 }
 
 void UsersCertificates::add(const QByteArray &cert)
 {
-    if (!contains(QSslCertificate(cert)))
+    if (!contains(cert))
     {
-        m_settings.setValue(USER_CERTS.arg(m_clientsNum++), cert);
-        m_settings.setValue(USER_NUM, m_clientsNum);
+        m_settings.setValue(USER_CERTS.arg(m_unicID++), cert);
+        m_settings.setValue(USER_ID, m_unicID);
     }
-    qDebug() << Q_FUNC_INFO << m_clientsNum;
+    qDebug() << Q_FUNC_INFO << m_unicID;
 }
 
 //certificate must be in Pem encoding.
-bool UsersCertificates::contains(const QSslCertificate &cert)
+bool UsersCertificates::contains(const QByteArray &cert)
 {
     QStringList keys = m_settings.allKeys();
     for (auto k : keys)
     {
-        if (m_settings.value(k).value<QByteArray>() == cert.toPem())
+        if (m_settings.value(k).value<QByteArray>() == cert)
             return true;
     }
     return false;
@@ -45,8 +45,6 @@ void UsersCertificates::removeByCertificate(const QByteArray &cert)
         if (m_settings.value(k).value<QByteArray>() == cert)
         {
             m_settings.remove(k);
-            m_clientsNum--;
-            m_settings.setValue(USER_NUM, m_clientsNum);
             break;
         }
     }
@@ -59,5 +57,7 @@ void UsersCertificates::removeByKey(const QByteArray &key)
 
 QStringList UsersCertificates::list()
 {
-    return m_settings.allKeys();
+    QStringList list = m_settings.allKeys();
+    list.removeOne(USER_ID);
+    return list;
 }

@@ -102,7 +102,7 @@ void MainWindow::addConnection()
     //Connect sockets signals.
     //Socket::encrypted
     connect(socket, &QSslSocket::encrypted, [socket, this](){
-        if (m_clients_certificates.contains(socket->peerCertificate()))
+        if (m_clients_certificates.contains(socket->peerCertificate().toPem()))
         {
             logWrite(QString("New connection %1:%2 ")
                                     .arg(socket->peerAddress().toString())
