@@ -10,13 +10,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
-    updateUsersListWidget();
-
     if(!QSslSocket::supportsSsl())
     {
         ui->logTextEdit->setText("SSL does not support.");
         return;
     }
+
+    updateUsersListWidget();
 
     //Connect buttons.
     //Add user certificate button.
@@ -108,7 +108,14 @@ void MainWindow::addConnection()
                                     .arg(socket->peerAddress().toString())
                                     .arg(socket->peerPort()));
             m_sockets.append(socket);
-            socket->write("Hi from server.");
+            QByteArray block = "HTTP/1.0 200 Ok\r\n"
+            "Content-Type: text/html; charset=\"utf-8\"\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "Some text from server."
+            "\r\n";
+            socket->write(block);
+            socket->flush();
         }
         else
         {
@@ -127,10 +134,14 @@ void MainWindow::addConnection()
     });
     //Socket::redyRead
     connect(socket, &QSslSocket::readyRead, [socket, this](){
-        logWrite(QString("Msg from %1:%2 : %3")
+        QString msg = socket->readAll().constData();
+//        if (msg.contains("GET"))
+//            logWrite("Msg from browser.");
+//        else
+            logWrite(QString("Msg from %1:%2 : %3")
                                 .arg(socket->peerAddress().toString())
                                 .arg(socket->peerPort())
-                                .arg(socket->readAll().constData()));
+                                .arg(msg));
     });
     //Socket::stateChanged
     connect(socket, &QSslSocket::stateChanged, [this](QAbstractSocket::SocketState state){
@@ -152,10 +163,6 @@ void MainWindow::addConnection()
         ui->logTextEdit->append("Сritical error.");
         qDebug() << errors;
     });
-
-    QList<QSslError> ignoreErrors;
-    ignoreErrors << QSslError::CertificateUntrusted << QSslError::SelfSignedCertificate;
-    socket->ignoreSslErrors(ignoreErrors);
 
     socket->setLocalCertificate(m_certificate);
     socket->setPrivateKey(m_key);

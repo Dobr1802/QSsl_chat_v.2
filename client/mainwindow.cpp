@@ -38,8 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
         {
             ui->logTextEdit->append(err.errorString());
         }
-
-        m_socket->ignoreSslErrors();
     });
     connect(m_socket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), [this](QAbstractSocket::SocketError errors){
         ui->logTextEdit->append("Сritical error.");
